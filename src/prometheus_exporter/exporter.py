@@ -39,6 +39,8 @@ class Exporter(ThreadingHTTPServer):
         port = kwargs.pop('port') if 'port' in kwargs else self.config.get('listen_port', DEFAULT_PORT)
         kwargs['server_address'] = (ip, port)
 
+        self.logger.info("Exporter server address: %s:%d" % (*kwargs['server_address'], ))
+
         super().__init__(*args, **kwargs)
 
     def __setattr__(self, name, value):
