@@ -10,7 +10,7 @@ from zenlib.logging import ColorLognameFormatter
 
 
 def main():
-    argparser = ArgumentParser(prog='json_exporter', description='JSON Exporter for Prometheus')
+    argparser = ArgumentParser(prog='prometheus_exporter', description='Metric Exporter for Prometheus')
 
     argparser.add_argument('-d', '--debug', action='store_true', help='Debug mode.')
     argparser.add_argument('-dd', '--verbose', action='store_true', help='Verbose debug mode.')
