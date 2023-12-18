@@ -85,9 +85,9 @@ class Exporter(ThreadingHTTPServer):
         filtered_metrics = []
         for label_name, label_value in label_filter.items():
             if label_name not in self.labels.global_labels:
-                raise ValueError("label_filter contains unknown label: %s", label_name)
+                raise ValueError("Unknown label: %s" % label_name)
             if label_value not in self.labels.global_labels[label_name]:
-                raise ValueError("[%s] label_filter contains unknown label value: %s" % (label_name, label_value))
+                raise ValueError("[%s] Unknown label value: %s" % (label_name, label_value))
 
             # If metrics have already been filtered, filter them again so labels act as an "and" filter.
             if filtered_metrics:
