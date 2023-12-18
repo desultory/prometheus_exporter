@@ -1,6 +1,8 @@
 
-listen_ip = '0.0.0.0'
-listen_port = 9999
+# By default it will listen on 127.0.0.1:9999
+
+#listen_ip = '0.0.0.0'
+#listen_port = 80
 
 [metrics.test]
 type = "counter"

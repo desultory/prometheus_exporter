@@ -35,8 +35,8 @@ class Exporter(ThreadingHTTPServer):
         self.read_config()
 
         kwargs['RequestHandlerClass'] = PrometheusRequest
-        ip = self.config['listen_ip'] if 'ip' not in kwargs else kwargs.pop('ip', DEFAULT_IP)
-        port = self.config['listen_port'] if 'port' not in kwargs else kwargs.pop('port', DEFAULT_PORT)
+        ip = kwargs.pop('ip') if 'ip' in kwargs else self.config.get('listen_ip', DEFAULT_IP)
+        port = kwargs.pop('port') if 'port' in kwargs else self.config.get('listen_port', DEFAULT_PORT)
         kwargs['server_address'] = (ip, port)
 
         super().__init__(*args, **kwargs)
