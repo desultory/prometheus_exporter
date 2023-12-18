@@ -80,12 +80,17 @@ class Exporter(ThreadingHTTPServer):
         """
         Filters a list of metrics by a label_filter.
         """
+        filtered_metrics = []
         for label_name, label_value in label_filter.items():
             if label_name not in self.labels.global_labels:
                 raise ValueError("label_filter contains unknown label: %s", label_name)
             if label_value not in self.labels.global_labels[label_name]:
                 raise ValueError("[%s] label_filter contains unknown label value: %s" % (label_name, label_value))
-            return [metric for metric in metrics if metric.labels[label_name] == label_value]
+            for metric in metrics:
+                if label_name in metric.labels and metric.labels[label_name] == label_value:
+                    filtered_metrics.append(metric)
+
+        return filtered_metrics
 
     def export(self, label_filter=None):
         """
