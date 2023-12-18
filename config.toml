@@ -1,0 +1,19 @@
+
+listen_ip = '0.0.0.0'
+listen_port = 9999
+
+[metrics.test]
+type = "counter"
+value = 1
+help = "test counter"
+
+[metrics.test.labels]
+asdf = "1234"
+
+[metrics.abcd]
+type = "gauge"
+value = 2
+help = "test gauge"
+
+[labels]
+test = "test"
