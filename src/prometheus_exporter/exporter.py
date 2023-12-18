@@ -16,7 +16,7 @@ from .metric import Metric
 from .prometheus_request import PrometheusRequest
 
 DEFAULT_IP = '127.0.0.1'
-DEFAULT_PORT = 9809
+DEFAULT_PORT = 9999
 
 
 @loggify
