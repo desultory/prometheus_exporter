@@ -27,6 +27,9 @@ class Exporter(ThreadingHTTPServer):
     Forces use of the PrometheusRequest RequestHandlerClass.
     Reads a config.toml file to read the server port and ip.
     If 'ip' and 'port' are passed as kwargs, they will override the config file.
+
+    When metrics are added from the config, they are added to self.metrics.
+    Labels can be supplied as a dict as an argument, and in the config file.
     """
     def __init__(self, config_file='config.toml', labels=Labels(), *args, **kwargs):
         self.labels = Labels(dict_items=labels, logger=self.logger, _log_init=False)
@@ -57,10 +60,10 @@ class Exporter(ThreadingHTTPServer):
         self.logger.info("Read config file: %s", self.config_file)
         self.labels.update(self.config.get('labels', {}))
 
-        self.add_metrics()
+        self.add_config_metrics()
 
-    def add_metrics(self):
-        """ Adds all defined metrics to the exporter. """
+    def add_metrics_config(self):
+        """ Adds all metrics defined in the config to the exporter. """
         for name, values in self.config.get('metrics', {}).items():
             kwargs = {'metric_type': values.pop('type'), 'labels': self.labels.copy(),
                       'logger': self.logger, '_log_init': False}
@@ -73,15 +76,11 @@ class Exporter(ThreadingHTTPServer):
             self.metrics.append(Metric(name=name, **kwargs, **values))
 
     def get_metrics(self):
-        """
-        Gets all defined metrics.
-        """
-        return [metric for metric in Metric.metrics]
+        """ Gets all defined metrics. """
+        return [metric for metric in self.metrics]
 
     def _filter_metrics(self, metrics, label_filter):
-        """
-        Filters a list of metrics by a label_filter.
-        """
+        """ Filters a list of metrics by a label_filter. """
         filtered_metrics = []
         for label_name, label_value in label_filter.items():
             if label_name not in self.labels.global_labels:
@@ -102,7 +101,7 @@ class Exporter(ThreadingHTTPServer):
 
     def export(self, label_filter=None):
         """
-        Go through ALL DEFINED metrics, turn them into a metric string for prometheus.
+        Go through metrics in self.metrics, turn them into a metric string for prometheus.
         If a label_filter is passed, only return metrics that match the label_filter.
         """
         metrics = self.get_metrics()
