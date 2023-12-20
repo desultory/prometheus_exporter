@@ -17,9 +17,10 @@ class MetricTypes(Enum):
 @loggify
 class Metric:
     """
-    A class used to represent a prometheus metric.
+    Represents a Prometheus metric.
     Labels can be added to the metric by passing a dictionary as the labels argument.
     The value defaults to 0.
+    The metric type defaults to 'untyped'.
     """
     def __init__(self, name, value=0, metric_type='untyped', help=None, labels=Labels(), *args, **kwargs):
         self.name = name
@@ -31,7 +32,6 @@ class Metric:
     def __setattr__(self, name, value):
         """
         Ensure name is not changed after creation.
-        Warn if the name is already in use.
         Turn spaces in the name into underscores.
         Set the metric type based on the MetricTypes enum.
         """

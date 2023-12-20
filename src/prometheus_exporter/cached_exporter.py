@@ -45,9 +45,9 @@ def cached_exporter(cls):
                 self.logger.debug("Cached metrics: %s", self._cached_metrics)
             return self._cached_metrics
 
-    CachedExporter.__name__ = cls.__name__
+    CachedExporter.__name__ = f"Cached{cls.__name__}"
     CachedExporter.__module__ = cls.__module__
-    CachedExporter.__qualname__ = cls.__qualname__
+    CachedExporter.__qualname__ = cls.__qualname__.replace(cls.__name__, CachedExporter.__name__)
     CachedExporter.__doc__ = cls.__doc__
 
     return CachedExporter
