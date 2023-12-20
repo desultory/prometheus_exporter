@@ -1,7 +1,3 @@
-"""
-Basic prometheus metric class
-"""
-
 from enum import Enum
 
 from zenlib.logging import loggify
@@ -25,35 +21,29 @@ class Metric:
     Labels can be added to the metric by passing a dictionary as the labels argument.
     The value defaults to 0.
     """
-    metrics = []
+    metric_names = []
 
     def __init__(self, name, value=0, metric_type='untyped', help=None, labels=Labels(), *args, **kwargs):
-        """
-        Initialize the metric
-        """
-        if name in self.metrics:
-            raise ValueError("Metric name already exists: %s" % name)
-
         self.name = name
         self.type = metric_type
         self.help = help
         self.labels = Labels(labels, logger=self.logger, _log_init=False)
         self.value = value
-        Metric.metrics.append(self)
-
-    def __del__(self):
-        """
-        Delete the metric from the metrics dictionary
-        """
-        Metric.metrics.remove(self)
 
     def __setattr__(self, name, value):
         """
+        Ensure name is not changed after creation.
+        Warn if the name is already in use.
         Turn spaces in the name into underscores.
         Set the metric type based on the MetricTypes enum.
         """
         if name == 'name':
+            if hasattr(self, 'name'):
+                raise AttributeError('Cannot change metric name')
             value = value.replace(' ', '_')
+            if value in Metric.metric_names:
+                self.logger.warning("Metric name already in use: %s", value)
+            Metric.metric_names.append(value)
         if name == 'type':
             value = MetricTypes[value.upper()]
         if name == 'value':
@@ -62,10 +52,13 @@ class Metric:
 
         super().__setattr__(name, value)
 
+    def __del__(self):
+        """ Remove the metric name from the list of metric names. """
+        Metric.metric_names.remove(self.name)
+
     def __str__(self):
-        """
-        String representation of the metric
-        """
+        """ Get a string representation of the metric for Prometheus """
+        # Start by adding the help text if it exists
         if self.help:
             out_str = f'# HELP {self.name} {self.help}\n'
         else:
@@ -73,6 +66,7 @@ class Metric:
 
         out_str += f'# TYPE {self.name} {self.type.value}\n{self.name}'
 
+        # Add labels if they exist
         if self.labels:
             out_str = f"{out_str}{{{self.labels}}}"
 

@@ -62,7 +62,7 @@ class Exporter(ThreadingHTTPServer):
 
         self.add_config_metrics()
 
-    def add_metrics_config(self):
+    def add_config_metrics(self):
         """ Adds all metrics defined in the config to the exporter. """
         for name, values in self.config.get('metrics', {}).items():
             kwargs = {'metric_type': values.pop('type'), 'labels': self.labels.copy(),
