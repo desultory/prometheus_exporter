@@ -21,8 +21,6 @@ class Metric:
     Labels can be added to the metric by passing a dictionary as the labels argument.
     The value defaults to 0.
     """
-    metric_names = []
-
     def __init__(self, name, value=0, metric_type='untyped', help=None, labels=Labels(), *args, **kwargs):
         self.name = name
         self.type = metric_type
@@ -41,20 +39,12 @@ class Metric:
             if hasattr(self, 'name'):
                 raise AttributeError('Cannot change metric name')
             value = value.replace(' ', '_')
-            if value in Metric.metric_names:
-                self.logger.warning("Metric name already in use: %s", value)
-            Metric.metric_names.append(value)
-        if name == 'type':
+        elif name == 'type':
             value = MetricTypes[value.upper()]
-        if name == 'value':
+        elif name == 'value':
             if not isinstance(value, (int, float)):
                 raise TypeError('Value must be an integer or float')
-
         super().__setattr__(name, value)
-
-    def __del__(self):
-        """ Remove the metric name from the list of metric names. """
-        Metric.metric_names.remove(self.name)
 
     def __str__(self):
         """ Get a string representation of the metric for Prometheus """

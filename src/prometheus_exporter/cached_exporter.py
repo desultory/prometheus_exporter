@@ -37,9 +37,9 @@ def cached_exporter(cls):
         def get_metrics(self):
             """ Get metrics from the exporter, caching the result. """
             from time import time
-            if not hasattr(self, '_cached_metrics') or time() - self._cache_time > self.cache_life:
-                self._cached_metrics = super().get_metrics()
+            if not hasattr(self, '_cached_metrics') or time() - self._cache_time >= self.cache_life:
                 self._cache_time = time()
+                self._cached_metrics = super().get_metrics()
             else:
                 self.logger.info("Returning cached metrics.")
                 self.logger.debug("Cached metrics: %s", self._cached_metrics)
