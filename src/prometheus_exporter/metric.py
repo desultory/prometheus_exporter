@@ -46,6 +46,12 @@ class Metric:
                 raise TypeError('Value must be an integer or float')
         super().__setattr__(name, value)
 
+    def __getattribute__(self, name):
+        """ Return the result of value() if the method exists, otherwise return the attribute """
+        if name == 'value' and hasattr(self, '_value'):
+            return self._value()
+        return super().__getattribute__(name)
+
     def __str__(self):
         """ Get a string representation of the metric for Prometheus """
         # Start by adding the help text if it exists
