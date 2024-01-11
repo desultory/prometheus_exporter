@@ -107,6 +107,7 @@ class Exporter(ThreadingHTTPServer):
         metrics = self.get_metrics()
         if label_filter:
             metrics = self._filter_metrics(metrics, label_filter)
+        self.logger.debug("Exporting metrics: %s", metrics)
         return "\n".join([str(metric) for metric in metrics])
 
     def handle_error(self, request, client_address):
