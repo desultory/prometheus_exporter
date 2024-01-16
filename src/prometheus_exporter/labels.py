@@ -63,9 +63,6 @@ class Labels(dict):
         if not isinstance(name, str):
             raise TypeError('Label names must be strings')
 
-        # Check that the label name is not already defined
-        if name in self:
-            raise ValueError("Label is already defined: %s" % name)
         # Check that the label value is a string
         if not isinstance(value, str):
             raise TypeError('Label values must be strings')
