@@ -75,38 +75,28 @@ class Exporter(ThreadingHTTPServer):
             self.logger.info("Adding metric: %s", name)
             self.metrics.append(Metric(name=name, **kwargs, **values))
 
-    def get_metrics(self):
+    def filter_metrics(self, label_filter={}):
+        """ Filters metrics by label. """
+        return self.get_labels().filter_metrics(self._get_metrics(), label_filter)
+
+    def get_labels(self):
+        """ Gets a copy of the labels dict. """
+        return self.labels.copy()
+
+    def _get_metrics(self):
         """ Gets all defined metrics. """
-        return [metric for metric in self.metrics]
+        return self.metrics
 
-    def _filter_metrics(self, metrics, label_filter):
-        """ Filters a list of metrics by a label_filter. """
-        filtered_metrics = []
-        for label_name, label_value in label_filter.items():
-            if label_name not in self.labels.global_labels:
-                raise ValueError("Unknown label: %s" % label_name)
-            if label_value not in self.labels.global_labels[label_name]:
-                raise ValueError("[%s] Unknown label value: %s" % (label_name, label_value))
+    def get_metrics(self, label_filter={}):
+        """ Gets all defined metrics, filtered by label_filter Can be overridden to use other methods."""
+        return self.filter_metrics(label_filter)
 
-            # If metrics have already been filtered, filter them again so labels act as an "and" filter.
-            if filtered_metrics:
-                metrics = filtered_metrics
-                filtered_metrics = []
-
-            for metric in metrics:
-                if label_name in metric.labels and metric.labels[label_name] == label_value:
-                    filtered_metrics.append(metric)
-
-        return filtered_metrics
-
-    def export(self, label_filter=None):
+    def export(self, label_filter={}):
         """
-        Go through metrics in self.metrics, turn them into a metric string for prometheus.
-        If a label_filter is passed, only return metrics that match the label_filter.
+        Gets metrics using self.get_metrics(), passing the label_filter.
+        Turns them into a metric string for prometheus.
         """
-        metrics = self.get_metrics()
-        if label_filter:
-            metrics = self._filter_metrics(metrics, label_filter)
+        metrics = self.get_metrics(label_filter)
         self.logger.debug("Exporting metrics: %s", metrics)
         return "\n".join([str(metric) for metric in metrics])
 

@@ -18,6 +18,26 @@ class Labels(dict):
         """ Create a new Labels object from a dictionary """
         self.update(dict_items)
 
+    def filter_metrics(self, metrics, filter_dict={}):
+        """ Filter the metrics based on the labels in the filter_dict """
+        # First filter the filter, to remove any labels that are not defined
+        for key, value in filter_dict.copy().items():
+            if key not in self:
+                self.logger.debug("Filter label %s is not defined, removing", key)
+                del filter_dict[key]
+
+        if not filter_dict:
+            self.logger.debug("No labels defined in filter, returning all metrics")
+            return metrics
+
+        self.logger.debug("Filtering metrics with labels: %s", filter_dict)
+
+        for key, value in filter_dict.items():
+            metrics = [metric for metric in metrics if metric.labels.get(key) == value]
+
+        self.logger.debug("Filtered metrics: %s", metrics)
+        return metrics
+
     def __setitem__(self, key, value):
         self._check_label(key, value)
         super().__setitem__(key, value)
@@ -52,5 +72,6 @@ class Labels(dict):
     def __str__(self):
         return ','.join(['%s="%s"' % (name, value) for name, value in self.items()])
 
-
-
+    def copy(self):
+        """ Returns a copy of the labels """
+        return Labels(super().copy())

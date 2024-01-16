@@ -34,16 +34,19 @@ def cached_exporter(cls):
             if 'cache_life' in self.config:
                 self.cache_life = self.config['cache_life']
 
-        def get_metrics(self):
+        def _get_metrics(self):
+            return self._cached_metrics if hasattr(self, '_cached_metrics') else super()._get_metrics()
+
+        def get_metrics(self, label_filter={}):
             """ Get metrics from the exporter, caching the result. """
             from time import time
             if not hasattr(self, '_cached_metrics') or time() - self._cache_time >= self.cache_life:
                 self._cache_time = time()
-                self._cached_metrics = super().get_metrics()
+                self._cached_metrics = super().get_metrics(label_filter=label_filter)
             else:
                 self.logger.info("Returning cached metrics.")
                 self.logger.debug("Cached metrics: %s", self._cached_metrics)
-            return self._cached_metrics
+            return self.filter_metrics(label_filter=label_filter)
 
     CachedExporter.__name__ = f"Cached{cls.__name__}"
     CachedExporter.__module__ = cls.__module__
