@@ -8,6 +8,7 @@ If a dict is passed to the export method, it will be used to filter by that labe
 
 from http.server import ThreadingHTTPServer
 from pathlib import Path
+from signal import signal, SIGHUP
 
 from zenlib.logging import loggify
 
@@ -35,6 +36,7 @@ class Exporter(ThreadingHTTPServer):
         self.labels = Labels(dict_items=labels, logger=self.logger, _log_init=False)
         self.metrics = []
         self.config_file = Path(config_file)
+        signal(SIGHUP, lambda *args: self.read_config())
         self.read_config()
 
         kwargs['RequestHandlerClass'] = PrometheusRequest
