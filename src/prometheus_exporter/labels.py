@@ -18,10 +18,11 @@ class Labels(dict):
         """ Create a new Labels object from a dictionary """
         self.update(dict_items)
 
-    def filter_metrics(self, metrics, filter_dict={}):
+    def filter_metrics(self, metrics, input_filter_dict={}):
         """ Filter the metrics based on the labels in the filter_dict """
+        filter_dict = input_filter_dict.copy()
         # First filter the filter, to remove any labels that are not defined
-        for key, value in filter_dict.copy().items():
+        for key, value in input_filter_dict.items():
             if key not in self:
                 self.logger.debug("Filter label %s is not defined, removing", key)
                 del filter_dict[key]
@@ -74,4 +75,4 @@ class Labels(dict):
 
     def copy(self):
         """ Returns a copy of the labels """
-        return Labels(super().copy())
+        return Labels(super().copy(), logger=self.logger.parent, _log_init=False)
