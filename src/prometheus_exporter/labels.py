@@ -18,7 +18,7 @@ class Labels(dict):
         """ Create a new Labels object from a dictionary """
         self.update(dict_items)
 
-    def filter_metrics(self, metrics, input_filter_dict={}):
+    async def filter_metrics(self, metrics, input_filter_dict={}):
         """ Filter the metrics based on the labels in the filter_dict """
         filter_dict = input_filter_dict.copy()
         # First filter the filter, to remove any labels that are not defined

@@ -47,8 +47,10 @@ class Exporter:
 
     async def handle_metrics(self, request, *args, **kwargs):
         params = dict([p.split('=') for p in request.query_string.split('&')]) if request.query_string else {}
-        self.logger.debug("Handling metrics request: %s", request)
-        return Response(text=self.export(params))
+        self.logger.info("[%s:%d] Handling metrics request: %s" % (self.host, self.port, request.query_string))
+        response = Response(text=await self.export(params))
+        self.logger.info("[%s] Sending response: <%d> Length: %d" % (request.remote, response.status, response.content_length))
+        return response
 
     def __setattr__(self, name, value):
         if name == 'labels' and not isinstance(value, Labels):
@@ -79,30 +81,30 @@ class Exporter:
             self.logger.info("Adding metric: %s", name)
             self.metrics.append(Metric(name=name, **kwargs, **values))
 
-    def filter_metrics(self, label_filter={}):
+    async def filter_metrics(self, label_filter={}):
         """ Filters metrics by label. """
-        metrics = self._get_metrics().copy()
+        metrics = await self._get_metrics()
         for metric in metrics:
-            metrics = metric.labels.filter_metrics(metrics, label_filter)
+            metrics = await metric.labels.filter_metrics(metrics, label_filter)
         return metrics
 
     def get_labels(self):
         """ Gets a copy of the labels dict. """
         return self.labels.copy()
 
-    def _get_metrics(self):
+    async def _get_metrics(self):
         """ Gets all defined metrics. """
         return self.metrics
 
-    def get_metrics(self, label_filter={}):
+    async def get_metrics(self, label_filter={}):
         """ Gets all defined metrics, filtered by label_filter Can be overridden to use other methods."""
-        return self.filter_metrics(label_filter)
+        return await self.filter_metrics(label_filter)
 
-    def export(self, label_filter={}):
+    async def export(self, label_filter={}):
         """
         Gets metrics using self.get_metrics(), passing the label_filter.
         Turns them into a metric string for prometheus.
         """
-        metrics = self.get_metrics(label_filter)
+        metrics = await self.get_metrics(label_filter)
         self.logger.debug("Exporting metrics: %s", metrics)
         return "\n".join([str(metric) for metric in metrics])
