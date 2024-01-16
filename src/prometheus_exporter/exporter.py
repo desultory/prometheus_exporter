@@ -33,6 +33,8 @@ class Exporter:
         self.config_file = Path(config_file)
         signal(SIGHUP, lambda *args: self.read_config())
         self.read_config()
+        self.host = kwargs.get('host', self.config.get('listen_ip', DEFAULT_IP))
+        self.port = kwargs.get('port', self.config.get('listen_port', DEFAULT_PORT))
 
         self.app = Application(logger=self.logger)
         self.app.add_routes([get('/metrics', self.handle_metrics)])
@@ -40,10 +42,8 @@ class Exporter:
     def start(self):
         """ Starts the exporter server. """
         from aiohttp import web
-        host = self.config.get('listen_ip', DEFAULT_IP)
-        port = self.config.get('listen_port', DEFAULT_PORT)
-        self.logger.info("Exporter server address: %s:%d" % (host, port))
-        web.run_app(self.app, host=host, port=port)
+        self.logger.info("Exporter server address: %s:%d" % (self.host, self.port))
+        web.run_app(self.app, host=self.host, port=self.port)
 
     async def handle_metrics(self, request, *args, **kwargs):
         params = dict([p.split('=') for p in request.query_string.split('&')]) if request.query_string else {}
