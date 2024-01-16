@@ -17,7 +17,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "zenlib >= 1.6.2"
+    "zenlib >= 1.6.2",
+    "aiohttp >= 3.9.1"
 ]
 
 [project.scripts]
