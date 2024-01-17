@@ -38,6 +38,28 @@ class Exporter(ClassLogger):
         self.app = Application(logger=self.logger)
         self.app.add_routes([get('/metrics', self.handle_metrics)])
 
+    def __setattr__(self, name, value):
+        if name == 'labels':
+            assert isinstance(value, Labels), "Labels must be a 'Labels' object."
+        super().__setattr__(name, value)
+
+    def get_labels(self):
+        return self.labels.copy()
+
+    async def get_metrics(self, *args, **kwargs):
+        self.metrics = []
+        self.add_config_metrics(log_bump=10)
+        return self.metrics.copy()
+
+    def read_config(self):
+        """ Reads the config file defined in self.config_file """
+        from tomllib import load
+        with open(self.config_file, 'rb') as config:
+            self.config = load(config)
+
+        self.logger.info("Read config file: %s", self.config_file)
+        self.labels |= self.config.get('labels', {})
+
     def start(self):
         """ Starts the exporter server. """
         from aiohttp import web
@@ -51,54 +73,30 @@ class Exporter(ClassLogger):
         self.logger.info("[%s (%s)] Sending response: <%d> Length: %d" % (request.remote, request.query_string, response.status, response.content_length))
         return response
 
-    def __setattr__(self, name, value):
-        if name == 'labels' and not isinstance(value, Labels):
-            raise ValueError("Labels must be a dict.")
-        super().__setattr__(name, value)
-
-    def read_config(self):
-        """ Reads the config file defined in self.config_file """
-        from tomllib import load
-        with open(self.config_file, 'rb') as config:
-            self.config = load(config)
-
-        self.logger.info("Read config file: %s", self.config_file)
-        self.labels.update(self.config.get('labels', {}))
-
-    def add_config_metrics(self):
+    async def add_config_metrics(self, log_bump=0):
         """ Adds all metrics defined in the config to the exporter. """
         for name, values in self.config.get('metrics', {}).items():
-            kwargs = {'metric_type': values.pop('type'), 'labels': self.labels.copy(),
+            kwargs = {'metric_type': values.pop('type'), 'labels': self.get_labels(),
                       'logger': self.logger, '_log_init': False}
 
             # Add labels specified under the metric to ones in the exporter
             if labels := values.pop('labels', None):
                 kwargs['labels'].update(labels)
 
-            self.logger.info("Adding metric: %s", name)
+            self.logger.log(20 - log_bump, "Adding metric: %s", name)
             self.metrics.append(Metric(name=name, **kwargs, **values))
 
-    async def filter_metrics(self, label_filter={}):
-        """ Filters metrics by label. """
-        self.logger.debug("Filtering %d metrics using filter: %s" % (len(self.metrics), label_filter))
-        self.metrics = [metric for metric in self.metrics if metric.check_labels(label_filter)]
-
-    def get_labels(self):
-        """ Gets a copy of the labels dict. """
-        return self.labels.copy()
-
-    async def get_metrics(self, *args, **kwargs):
-        """ Gets all defined metrics, filtered by label_filter Can be overridden to use other methods."""
-        self.add_config_metrics()
-        return self.metrics
-
     async def export(self, label_filter={}):
-        """
-        Gets metrics using self.get_metrics(), passing the label_filter.
-        Turns them into a metric string for prometheus.
-        """
-        self.metrics = []
-        await self.get_metrics(label_filter=label_filter)
-        await self.filter_metrics(label_filter=label_filter)
-        self.logger.debug("Exporting metrics:\n%s", '\n'.join([str(metric) for metric in self.metrics]))
-        return "\n".join([str(metric) for metric in self.metrics])
+        """ Gets metrics using self.metrics Turns them into a metric string for prometheus. """
+        output = ""
+        for metric in await self.get_metrics(label_filter=label_filter):
+            self.logger.debug("Checking metric: %s", metric)
+            if metric.check_labels(label_filter):
+                output += f'{metric}\n'
+
+        self.logger.debug("Exporting metrics:\n%s", output)
+        return output
+
+    def __str__(self):
+        metric_data = '\n'.join([str(metric) for metric in self.metrics])
+        return f"<Exporter host={self.host} port={self.port} metrics={len(self.metrics)}>\n{metric_data}"
