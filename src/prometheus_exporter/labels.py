@@ -31,12 +31,12 @@ class Labels(ClassLogger, dict):
             self.logger.debug("No labels defined in filter, returning all metrics")
             return metrics
 
-        self.logger.debug("Filtering metrics with labels: %s", filter_dict)
+        self.logger.log(5, "Filtering metrics with labels: %s", filter_dict)
 
         for key, value in filter_dict.items():
             metrics = [metric for metric in metrics if metric.labels.get(key) == value]
 
-        self.logger.debug("Filtered metrics: %s", metrics)
+        self.logger.log(5, "Filtered metrics: %s", metrics)
         return metrics
 
     def __setitem__(self, key, value):

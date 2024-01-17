@@ -29,7 +29,6 @@ class Exporter(ClassLogger):
     def __init__(self, config_file='config.toml', labels=Labels(), *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.labels = Labels(dict_items=labels, logger=self.logger, _log_init=False)
-        self.metrics = []
         self.config_file = Path(config_file)
         signal(SIGHUP, lambda *args: self.read_config())
         self.read_config()
@@ -66,8 +65,6 @@ class Exporter(ClassLogger):
         self.logger.info("Read config file: %s", self.config_file)
         self.labels.update(self.config.get('labels', {}))
 
-        self.add_config_metrics()
-
     def add_config_metrics(self):
         """ Adds all metrics defined in the config to the exporter. """
         for name, values in self.config.get('metrics', {}).items():
@@ -83,28 +80,29 @@ class Exporter(ClassLogger):
 
     async def filter_metrics(self, label_filter={}):
         """ Filters metrics by label. """
-        metrics = await self._get_metrics()
+        self.logger.debug("Filtering metrics: %s", self.metrics)
+        self.logger.debug("Using label filter: %s", label_filter)
+        metrics = self.metrics.copy()
         for metric in metrics:
             metrics = await metric.labels.filter_metrics(metrics, label_filter)
-        return metrics
+        self.metrics = metrics
 
     def get_labels(self):
         """ Gets a copy of the labels dict. """
         return self.labels.copy()
 
-    async def _get_metrics(self):
-        """ Gets all defined metrics. """
-        return self.metrics
-
-    async def get_metrics(self, label_filter={}):
+    async def get_metrics(self, *args, **kwargs):
         """ Gets all defined metrics, filtered by label_filter Can be overridden to use other methods."""
-        return await self.filter_metrics(label_filter)
+        self.add_config_metrics()
+        return self.metrics
 
     async def export(self, label_filter={}):
         """
         Gets metrics using self.get_metrics(), passing the label_filter.
         Turns them into a metric string for prometheus.
         """
-        metrics = await self.get_metrics(label_filter)
-        self.logger.debug("Exporting metrics: %s", metrics)
-        return "\n".join([str(metric) for metric in metrics])
+        self.metrics = []
+        await self.get_metrics(label_filter=label_filter)
+        await self.filter_metrics(label_filter=label_filter)
+        self.logger.debug("Exporting metrics: %s", self.metrics)
+        return "\n".join([str(metric) for metric in self.metrics])
