@@ -47,9 +47,9 @@ class Exporter:
 
     async def handle_metrics(self, request, *args, **kwargs):
         params = dict([p.split('=') for p in request.query_string.split('&')]) if request.query_string else {}
-        self.logger.info("[%s:%d] Handling metrics request: %s" % (self.host, self.port, request.query_string))
+        self.logger.debug("[%s] Handling metrics request: %s" % (request.remote, request.query_string))
         response = Response(text=await self.export(params))
-        self.logger.info("[%s] Sending response: <%d> Length: %d" % (request.remote, response.status, response.content_length))
+        self.logger.info("[%s (%s)] Sending response: <%d> Length: %d" % (request.remote, request.query_string, response.status, response.content_length))
         return response
 
     def __setattr__(self, name, value):

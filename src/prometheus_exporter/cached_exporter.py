@@ -40,7 +40,9 @@ def cached_exporter(cls):
         async def get_metrics(self, label_filter={}):
             """ Get metrics from the exporter, caching the result. """
             from time import time
-            if not hasattr(self, '_cached_metrics') or time() - self._cache_time >= self.cache_life:
+            cache_time = time() - getattr(self, '_cache_time', 0)
+            self.logger.debug("Cache time: %d" % (cache_time))
+            if not hasattr(self, '_cached_metrics') or cache_time >= self.cache_life:
                 self._cache_time = time()
                 self._cached_metrics = await super().get_metrics(label_filter=label_filter)
             else:
