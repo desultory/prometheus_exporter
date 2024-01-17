@@ -46,7 +46,7 @@ def cached_exporter(cls):
                     self._cached_metrics = new_metrics
                     self._cache_time = time()
             else:
-                self.logger.debug("Returning cached metrics: %s", self._cached_metrics)
+                self.logger.log(5, "Returning cached metrics: %s", self._cached_metrics)
                 self.metrics = self._cached_metrics
 
     CachedExporter.__name__ = f"Cached{cls.__name__}"

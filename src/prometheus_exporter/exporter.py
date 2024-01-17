@@ -80,8 +80,7 @@ class Exporter(ClassLogger):
 
     async def filter_metrics(self, label_filter={}):
         """ Filters metrics by label. """
-        self.logger.debug("Filtering metrics:\n%s" % '\n'.join([str(metric) for metric in self.metrics]))
-        self.logger.debug("Using label dict: %s", label_filter)
+        self.logger.debug("Filtering %d metrics using filter: %s" % (len(self.metrics), label_filter))
         self.metrics = [metric for metric in self.metrics if metric.check_labels(label_filter)]
 
     def get_labels(self):
@@ -101,5 +100,5 @@ class Exporter(ClassLogger):
         self.metrics = []
         await self.get_metrics(label_filter=label_filter)
         await self.filter_metrics(label_filter=label_filter)
-        self.logger.debug("Exporting metrics: %s", self.metrics)
+        self.logger.debug("Exporting metrics:\n%s", '\n'.join([str(metric) for metric in self.metrics]))
         return "\n".join([str(metric) for metric in self.metrics])
