@@ -29,6 +29,16 @@ class Metric:
         self.labels = Labels(labels, logger=self.logger, _log_init=False)
         self.value = value
 
+    def check_labels(self, label_filter):
+        """
+        Check if the metric labels match the label filter.
+        label_filter can be a dictionary or a Labels object.
+        """
+        for label, value in label_filter.items():
+            if label not in self.labels or self.labels[label] != value:
+                return False
+        return True
+
     def __setattr__(self, name, value):
         """
         Ensure name is not changed after creation.

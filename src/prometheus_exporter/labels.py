@@ -18,27 +18,6 @@ class Labels(ClassLogger, dict):
         super().__init__(**kwargs)
         self.update(dict_items)
 
-    async def filter_metrics(self, metrics, input_filter_dict={}):
-        """ Filter the metrics based on the labels in the filter_dict """
-        filter_dict = input_filter_dict.copy()
-        # First filter the filter, to remove any labels that are not defined
-        for key, value in input_filter_dict.items():
-            if key not in self:
-                self.logger.debug("Filter label %s is not defined, removing", key)
-                del filter_dict[key]
-
-        if not filter_dict:
-            self.logger.debug("No labels defined in filter, returning all metrics")
-            return metrics
-
-        self.logger.log(5, "Filtering metrics with labels: %s", filter_dict)
-
-        for key, value in filter_dict.items():
-            metrics = [metric for metric in metrics if metric.labels.get(key) == value]
-
-        self.logger.log(5, "Filtered metrics: %s", metrics)
-        return metrics
-
     def __setitem__(self, key, value):
         self._check_label(key, value)
         super().__setitem__(key, value)
