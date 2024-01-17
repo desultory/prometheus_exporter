@@ -40,9 +40,11 @@ def cached_exporter(cls):
             cache_time = time() - getattr(self, '_cache_time', 0)
             self.logger.debug("Cache time: %d" % (cache_time))
             if not hasattr(self, '_cached_metrics') or cache_time >= self.cache_life:
-                self.metrics = await super().get_metrics(label_filter=label_filter)
-                self._cached_metrics = self.metrics
-                self._cache_time = time()
+                self.metrics = []
+                if new_metrics := await super().get_metrics(label_filter=label_filter):
+                    self.metrics = new_metrics
+                    self._cached_metrics = new_metrics
+                    self._cache_time = time()
             else:
                 self.logger.info("Returning cached metrics.")
                 self.logger.debug("Cached metrics: %s", self._cached_metrics)
