@@ -6,16 +6,16 @@ Labels are added to the global labels dictionary, which is used by
 the filter function in exporters.
 """
 
-from zenlib.logging import loggify
+from zenlib.logging import ClassLogger
 
 
-@loggify
-class Labels(dict):
+class Labels(ClassLogger, dict):
     """ A dictionary of labels, used by both Metrics and Exporters """
     global_labels = {}
 
     def __init__(self, dict_items={}, **kwargs):
         """ Create a new Labels object from a dictionary """
+        super().__init__(**kwargs)
         self.update(dict_items)
 
     async def filter_metrics(self, metrics, input_filter_dict={}):

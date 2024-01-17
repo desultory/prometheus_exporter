@@ -9,7 +9,7 @@ from aiohttp.web import Application, Response, get
 from pathlib import Path
 from signal import signal, SIGHUP
 
-from zenlib.logging import loggify
+from zenlib.logging import ClassLogger
 
 from .labels import Labels
 from .metric import Metric
@@ -18,8 +18,7 @@ DEFAULT_IP = '127.0.0.1'
 DEFAULT_PORT = 9999
 
 
-@loggify
-class Exporter:
+class Exporter(ClassLogger):
     """
     Basic prometheus metric exporter class.
     Reads a config.toml file to read the server port and ip.
@@ -28,6 +27,7 @@ class Exporter:
     Labels can be supplied as a dict as an argument, and in the config file.
     """
     def __init__(self, config_file='config.toml', labels=Labels(), *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.labels = Labels(dict_items=labels, logger=self.logger, _log_init=False)
         self.metrics = []
         self.config_file = Path(config_file)
