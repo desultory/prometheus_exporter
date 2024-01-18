@@ -34,6 +34,7 @@ class Metric:
         Check if the metric labels match the label filter.
         label_filter can be a dictionary or a Labels object.
         """
+        self.logger.log(5, 'Checking labels: %s' % label_filter)
         for label, value in label_filter.items():
             if label not in self.labels or self.labels[label] != value:
                 return False

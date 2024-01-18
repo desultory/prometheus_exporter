@@ -90,7 +90,7 @@ class Exporter(ClassLogger):
         """ Gets metrics using self.metrics Turns them into a metric string for prometheus. """
         output = ""
         for metric in await self.get_metrics(label_filter=label_filter):
-            self.logger.debug("Checking metric: %s", metric)
+            self.logger.log(5, "Checking metric: %s", metric)
             if metric.check_labels(label_filter):
                 output += f'{metric}\n'
 
