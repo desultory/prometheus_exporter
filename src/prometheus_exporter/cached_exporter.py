@@ -38,15 +38,19 @@ def cached_exporter(cls):
             """ Get metrics from the exporter, caching the result. """
             from time import time
             cache_time = time() - getattr(self, '_cache_time', 0)
-            self.logger.debug("Cache time: %d" % (cache_time))
+            name = getattr(self, 'name', self.__class__.__name__)
+            self.logger.debug("[%s] Cache time: %d" % (name, cache_time))
             if not hasattr(self, '_cached_metrics') or cache_time >= self.cache_life:
                 self.metrics = []
                 if new_metrics := await super().get_metrics(label_filter=label_filter):
                     self.metrics = new_metrics
                     self._cached_metrics = new_metrics
                     self._cache_time = time()
+                elif hasattr(self, '_cached_metrics'):
+                    self.logger.warning("[%s] Exporter returned no metrics, returning cached metrics" % name)
+                    self.metrics = self._cached_metrics
             else:
-                self.logger.log(5, "Returning cached metrics: %s", self._cached_metrics)
+                self.logger.log(5, "[%s] Returning cached metrics: %s" % (name, self._cached_metrics))
                 self.metrics = self._cached_metrics
 
     CachedExporter.__name__ = f"Cached{cls.__name__}"

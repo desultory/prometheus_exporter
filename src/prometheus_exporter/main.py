@@ -18,9 +18,9 @@ def main():
     kwargs = {'logger': logger}
 
     if args.port:
-        kwargs['port'] = args.port
+        kwargs['listen_port'] = args.port
     if args.address:
-        kwargs['ip'] = args.address
+        kwargs['listen_ip'] = args.address
 
     exporter = Exporter(**kwargs)
     exporter.start()

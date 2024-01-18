@@ -32,8 +32,8 @@ class Exporter(ClassLogger):
         self.config_file = Path(config_file)
         signal(SIGHUP, lambda *args: self.read_config())
         self.read_config()
-        self.host = kwargs.get('host', self.config.get('listen_ip', DEFAULT_IP))
-        self.port = kwargs.get('port', self.config.get('listen_port', DEFAULT_PORT))
+        self.listen_ip = kwargs.get('listen_ip', self.config.get('listen_ip', DEFAULT_IP))
+        self.listen_port = kwargs.get('listen_port', self.config.get('listen_port', DEFAULT_PORT))
 
         self.app = Application(logger=self.logger)
         self.app.add_routes([get('/metrics', self.handle_metrics)])
@@ -63,8 +63,8 @@ class Exporter(ClassLogger):
     def start(self):
         """ Starts the exporter server. """
         from aiohttp import web
-        self.logger.info("Exporter server address: %s:%d" % (self.host, self.port))
-        web.run_app(self.app, host=self.host, port=self.port)
+        self.logger.info("Exporter server address: %s:%d" % (self.listen_ip, self.listen_port))
+        web.run_app(self.app, host=self.listen_ip, port=self.listen_port)
 
     async def handle_metrics(self, request, *args, **kwargs):
         params = dict([p.split('=') for p in request.query_string.split('&')]) if request.query_string else {}
@@ -99,4 +99,4 @@ class Exporter(ClassLogger):
 
     def __str__(self):
         metric_data = '\n'.join([str(metric) for metric in self.metrics])
-        return f"<Exporter host={self.host} port={self.port} metrics={len(self.metrics)}>\n{metric_data}"
+        return f"<Exporter host={self.listen_ip}:{self.listen_port} metrics={len(self.metrics)}>\n{metric_data}"
