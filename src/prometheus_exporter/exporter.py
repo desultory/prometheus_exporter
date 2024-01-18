@@ -73,7 +73,7 @@ class Exporter(ClassLogger):
         self.logger.info("[%s (%s)] Sending response: <%d> Length: %d" % (request.remote, request.query_string, response.status, response.content_length))
         return response
 
-    async def add_config_metrics(self, log_bump=0):
+    def add_config_metrics(self, log_bump=0):
         """ Adds all metrics defined in the config to the exporter. """
         for name, values in self.config.get('metrics', {}).items():
             kwargs = {'metric_type': values.pop('type'), 'labels': self.get_labels(),
