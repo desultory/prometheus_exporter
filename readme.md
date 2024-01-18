@@ -1,10 +1,13 @@
 # Prometheus Exporter
 
-A simple prometheus exporter library.
+A simple prometheus exporter library using:
+
+* [aiohttp](https://github.com/aio-libs/aiohttp)
+* [zenlib](https://github.com/desultory/zenlib)
 
 ## Features
 
-* aiohttp server
+* async via aiohttp
 * detailed logging
 * toml config
 * optional caching
