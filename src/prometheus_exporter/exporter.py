@@ -82,7 +82,8 @@ class Exporter(ClassLogger):
         params = dict([p.split('=') for p in request.query_string.split('&')]) if request.query_string else {}
         self.logger.debug("[%s] Handling metrics request: %s" % (request.remote, request.query_string))
         response = Response(text=await self.export(params))
-        self.logger.info("[%s (%s)] Sending response: <%d> Length: %d" % (request.remote, request.query_string, response.status, response.content_length))
+        self.logger.info("[%s (%s)] Sending response: <%d> Length: %d" % (request.remote, request.query_string,
+                                                                          response.status, response.content_length))
         return response
 
     def add_config_metrics(self, log_bump=0):
@@ -103,12 +104,12 @@ class Exporter(ClassLogger):
         output = ""
         for metric in await self.get_metrics(label_filter=label_filter):
             self.logger.log(5, "Checking metric: %s", metric)
-            if metric.check_labels(label_filter):
+            if metric.check_labels(label_filter) and metric.value is not None:
                 output += f'{metric}\n'
 
         self.logger.debug("Exporting metrics:\n%s", output)
         return output
 
     def __str__(self):
-        metric_data = '\n'.join([str(metric) for metric in self.metrics if metric.value is not None])
+        metric_data = '\n'.join([str(metric) for metric in self.metrics])
         return f"<Exporter host={self.listen_ip}:{self.listen_port} metrics={len(self.metrics)}>\n{metric_data}"
