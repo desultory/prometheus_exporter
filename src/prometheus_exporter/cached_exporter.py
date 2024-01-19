@@ -32,7 +32,7 @@ def cached_exporter(cls):
             """ Override read_config to add cache_life """
             super().read_config()
             if hasattr(self, 'cache_life'):
-                self.logger.warning("Cache life already set to: %ds", self.cache_life)
+                self.logger.debug("Cache life already set to: %ds", self.cache_life)
                 return
             self.cache_life = self.config.get('cache_life', 60)
             self.logger.info("Set cache_life to: %d seconds", self.cache_life)
