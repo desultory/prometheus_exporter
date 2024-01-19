@@ -110,5 +110,5 @@ class Exporter(ClassLogger):
         return output
 
     def __str__(self):
-        metric_data = '\n'.join([str(metric) for metric in self.metrics])
+        metric_data = '\n'.join([str(metric) for metric in self.metrics if metric.value is not None])
         return f"<Exporter host={self.listen_ip}:{self.listen_port} metrics={len(self.metrics)}>\n{metric_data}"
