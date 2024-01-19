@@ -49,6 +49,9 @@ class Exporter(ClassLogger):
     async def on_shutdown(self, app):
         self.logger.info("Shutting down exporter server")
         for task in all_tasks():
+            if task.get_coro().__name__ == '_run_app':
+                self.logger.debug("Skipping app task: %s", task)
+                continue
             self.logger.info("Cancelling task: %s", task)
             task.cancel()
 
