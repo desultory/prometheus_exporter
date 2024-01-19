@@ -31,8 +31,11 @@ def cached_exporter(cls):
         def read_config(self):
             """ Override read_config to add cache_life """
             super().read_config()
-            if 'cache_life' in self.config:
-                self.cache_life = self.config['cache_life']
+            if hasattr(self, 'cache_life'):
+                self.logger.warning("Cache life already set to: %ds", self.cache_life)
+                return
+            self.cache_life = self.config.get('cache_life', 60)
+            self.logger.info("Set cache_life to: %d seconds", self.cache_life)
 
         async def get_metrics(self, label_filter={}):
             """ Get metrics from the exporter, caching the result. """
