@@ -6,6 +6,7 @@ If a dict is passed to the export method, it will be used to filter by that labe
 """
 
 from aiohttp.web import Application, Response, get
+from asyncio import ensure_future, all_tasks
 from pathlib import Path
 from signal import signal, SIGHUP, SIGINT
 
@@ -36,13 +37,20 @@ class Exporter(ClassLogger):
         self.listen_port = kwargs.get('listen_port', self.config.get('listen_port', DEFAULT_PORT))
 
         self.app = Application(logger=self.logger)
-        signal(SIGINT, self.app.shutdown())
+        signal(SIGINT, lambda *args: ensure_future(self.app.shutdown()))
         self.app.add_routes([get('/metrics', self.handle_metrics)])
+        self.app.on_shutdown.append(self.on_shutdown)
 
     def __setattr__(self, name, value):
         if name == 'labels':
             assert isinstance(value, Labels), "Labels must be a 'Labels' object."
         super().__setattr__(name, value)
+
+    async def on_shutdown(self, app):
+        self.logger.info("Shutting down exporter server")
+        for task in all_tasks():
+            self.logger.info("Cancelling task: %s", task)
+            task.cancel()
 
     def get_labels(self):
         return self.labels.copy()
