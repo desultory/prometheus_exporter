@@ -7,7 +7,7 @@ If a dict is passed to the export method, it will be used to filter by that labe
 
 from aiohttp.web import Application, Response, get
 from pathlib import Path
-from signal import signal, SIGHUP
+from signal import signal, SIGHUP, SIGINT
 
 from zenlib.logging import ClassLogger
 
@@ -36,6 +36,7 @@ class Exporter(ClassLogger):
         self.listen_port = kwargs.get('listen_port', self.config.get('listen_port', DEFAULT_PORT))
 
         self.app = Application(logger=self.logger)
+        signal(SIGINT, self.app.shutdown())
         self.app.add_routes([get('/metrics', self.handle_metrics)])
 
     def __setattr__(self, name, value):

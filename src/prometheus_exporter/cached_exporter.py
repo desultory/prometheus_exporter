@@ -36,6 +36,10 @@ def cached_exporter(cls):
 
         async def get_metrics(self, label_filter={}):
             """ Get metrics from the exporter, caching the result. """
+            for key, value in label_filter.items():
+                if key not in self.labels and self.labels[key] != value:
+                    self.logger.debug("Label filter check failed: %s != %s", self.labels, label_filter)
+                    return
             from time import time
             cache_time = time() - getattr(self, '_cache_time', 0)
             name = getattr(self, 'name', self.__class__.__name__)
