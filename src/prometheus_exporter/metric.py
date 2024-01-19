@@ -51,7 +51,7 @@ class Metric:
                 raise AttributeError('Cannot change metric name')
             value = value.replace(' ', '_')
         elif name == 'type':
-            value = MetricTypes[value.upper()]
+            value = MetricTypes[value.upper()] if value else MetricTypes.UNTYPED
         elif name == 'value':
             if not isinstance(value, (int, float)):
                 raise TypeError('Value must be an integer or float')
