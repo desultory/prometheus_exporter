@@ -89,7 +89,7 @@ class Exporter(ClassLogger):
     def add_config_metrics(self, log_bump=0):
         """ Adds all metrics defined in the config to the exporter. """
         for name, values in self.config.get('metrics', {}).items():
-            kwargs = {'metric_type': values.pop('type'), 'labels': self.get_labels(),
+            kwargs = {'metric_type': values.get('type'), 'labels': self.get_labels(),
                       'logger': self.logger, '_log_init': False}
 
             # Add labels specified under the metric to ones in the exporter
