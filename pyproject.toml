@@ -17,7 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "zenlib >= 1.7.0",
+    "zenlib >= 1.7.1",
     "aiohttp >= 3.9.1"
 ]
 
