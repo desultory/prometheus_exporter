@@ -30,7 +30,7 @@ class Exporter(ClassLogger):
 
     def __init__(self, config_file="config.toml", labels=Labels(), *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.labels = Labels(dict_items=labels, logger=self.logger, _log_init=False)
+        self.labels = Labels(dict_items=labels, logger=self.logger)
         self.config_file = Path(config_file)
         signal(SIGHUP, lambda *args: self.read_config())
         self.read_config()
@@ -98,7 +98,6 @@ class Exporter(ClassLogger):
                 "metric_type": values.get("type"),
                 "labels": self.get_labels(),
                 "logger": self.logger,
-                "_log_init": False,
             }
 
             # Add labels specified under the metric to ones in the exporter

@@ -36,4 +36,4 @@ class Labels(ClassLogger, dict):
 
     def copy(self):
         """Returns a copy of the labels"""
-        return Labels(super().copy(), logger=self.logger.parent, _log_init=False)
+        return Labels(super().copy(), logger=self.logger.parent)

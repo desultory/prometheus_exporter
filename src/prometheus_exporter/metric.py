@@ -25,7 +25,7 @@ class Metric:
         self.name = name
         self.type = metric_type
         self.help = help
-        self.labels = Labels(labels, logger=self.logger, _log_init=False)
+        self.labels = Labels(labels, logger=self.logger)
         self.value = value
 
     def check_labels(self, label_filter: dict) -> bool:
