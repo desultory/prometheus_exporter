@@ -1,21 +1,20 @@
-
 # By default it will listen on 127.0.0.1:9999
 
 #listen_ip = '0.0.0.0'
 #listen_port = 80
 
-[metrics.test]
+[metrics.some_counter]
 type = "counter"
 value = 1
 help = "test counter"
 
-[metrics.test.labels]
-asdf = "1234"
+[metrics.some_counter.labels]
+some_label = "im a label"
 
-[metrics.abcd]
+[metrics.some_gauge]
 type = "gauge"
 value = 2
 help = "test gauge"
 
-[labels]
-test = "test"
+[labels]  # Global labels
+test = "test_label"
