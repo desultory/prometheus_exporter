@@ -28,12 +28,13 @@ class Exporter(ClassLogger):
     Labels can be supplied as a dict as an argument, and in the config file.
     """
 
-    def __init__(self, config_file="config.toml", labels=Labels(), *args, **kwargs):
+    def __init__(self, config_file="config.toml", labels=Labels(), no_config_file=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.labels = Labels(dict_items=labels, logger=self.logger)
         self.config_file = Path(config_file)
-        signal(SIGHUP, lambda *args: self.read_config())
-        self.read_config()
+        if not no_config_file:
+            signal(SIGHUP, lambda *args: self.read_config())
+            self.read_config()
         self.listen_ip = kwargs.get("listen_ip", self.config.get("listen_ip", DEFAULT_IP))
         self.listen_port = kwargs.get("listen_port", self.config.get("listen_port", DEFAULT_PORT))
 
@@ -59,10 +60,30 @@ class Exporter(ClassLogger):
     def get_labels(self):
         return self.labels.copy()
 
-    async def get_metrics(self, *args, **kwargs):
-        self.metrics = []
-        self.add_config_metrics(log_bump=10)
-        return self.metrics.copy()
+    async def get_metrics(self, *args, **kwargs) -> list:
+        """ Returns a copy of the metrics list.
+        This is designed to be extended in subclasses to get metrics from other sources.
+        Clears the metric list before getting metrics, as layers may add metrics to the list.
+        """
+        self.metrics = []  # Clear the metrics list
+        self.export_config_metrics()  # As an example, add metrics defined in the config
+        return self.metrics.copy()  # Return a copy because the caller may modify the list for filtering
+
+    def export_config_metrics(self, log_bump=10):
+        """Adds all metrics defined in the config to self.metrics for exporting."""
+        for name, values in self.config.get("metrics", {}).items():
+            kwargs = {
+                "metric_type": values.get("type"),
+                "labels": self.get_labels(),
+                "logger": self.logger,
+            }
+
+            # Add labels specified under the metric to ones in the exporter
+            if labels := values.pop("labels", None):
+                kwargs["labels"].update(labels)
+
+            self.logger.log(20 - log_bump, "Adding metric: %s", name)
+            self.metrics.append(Metric(name=name, **kwargs, **values))
 
     def read_config(self):
         """Reads the config file defined in self.config_file"""
@@ -90,22 +111,6 @@ class Exporter(ClassLogger):
             % (request.remote, request.query_string, response.status, response.content_length)
         )
         return response
-
-    def add_config_metrics(self, log_bump=0):
-        """Adds all metrics defined in the config to the exporter."""
-        for name, values in self.config.get("metrics", {}).items():
-            kwargs = {
-                "metric_type": values.get("type"),
-                "labels": self.get_labels(),
-                "logger": self.logger,
-            }
-
-            # Add labels specified under the metric to ones in the exporter
-            if labels := values.pop("labels", None):
-                kwargs["labels"].update(labels)
-
-            self.logger.log(20 - log_bump, "Adding metric: %s", name)
-            self.metrics.append(Metric(name=name, **kwargs, **values))
 
     async def export(self, label_filter={}):
         """Gets metrics using self.metrics Turns them into a metric string for prometheus."""
