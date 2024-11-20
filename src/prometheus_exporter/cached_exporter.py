@@ -11,15 +11,16 @@ def cached_exporter(cls):
         Adds caching to the get_metrics function.
         Default cache life is 60 seconds.
         """
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            if cache_life := kwargs.pop('cache_life', None):
+            if cache_life := kwargs.pop("cache_life", None):
                 self.cache_life = cache_life
-            elif not hasattr(self, 'cache_life'):
+            elif not hasattr(self, "cache_life"):
                 self.cache_life = 60
 
         def __setattr__(self, name, value):
-            """ Override setattr for cache_life """
+            """Override setattr for cache_life"""
             if name == "cache_life":
                 if not isinstance(value, int):
                     raise TypeError("cache_life must be an integer")
@@ -29,31 +30,32 @@ def cached_exporter(cls):
             super().__setattr__(name, value)
 
         def read_config(self):
-            """ Override read_config to add cache_life """
+            """Override read_config to add cache_life"""
             super().read_config()
-            if hasattr(self, 'cache_life'):
+            if hasattr(self, "cache_life"):
                 self.logger.debug("Cache life already set to: %ds", self.cache_life)
                 return
-            self.cache_life = self.config.get('cache_life', 60)
+            self.cache_life = self.config.get("cache_life", 60)
             self.logger.info("Set cache_life to: %d seconds", self.cache_life)
 
         async def get_metrics(self, label_filter={}):
-            """ Get metrics from the exporter, caching the result. """
+            """Get metrics from the exporter, caching the result."""
             for key, value in label_filter.items():
                 if key not in self.labels and self.labels[key] != value:
                     self.logger.debug("Label filter check failed: %s != %s", self.labels, label_filter)
                     return
             from time import time
-            cache_time = time() - getattr(self, '_cache_time', 0)
-            name = getattr(self, 'name', self.__class__.__name__)
+
+            cache_time = time() - getattr(self, "_cache_time", 0)
+            name = getattr(self, "name", self.__class__.__name__)
             self.logger.debug("[%s] Cache time: %d" % (name, cache_time))
-            if not hasattr(self, '_cached_metrics') or cache_time >= self.cache_life:
+            if not hasattr(self, "_cached_metrics") or cache_time >= self.cache_life:
                 self.metrics = []
                 if new_metrics := await super().get_metrics(label_filter=label_filter):
                     self.metrics = new_metrics
                     self._cached_metrics = new_metrics
                     self._cache_time = time()
-                elif hasattr(self, '_cached_metrics'):
+                elif hasattr(self, "_cached_metrics"):
                     self.logger.warning("[%s] Exporter returned no metrics, returning cached metrics" % name)
                     self.metrics = self._cached_metrics
             else:
