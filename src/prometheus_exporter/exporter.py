@@ -72,6 +72,7 @@ class Exporter(ClassLogger):
     def export_config_metrics(self, log_bump=10):
         """Adds all metrics defined in the config to self.metrics for exporting."""
         for name, values in self.config.get("metrics", {}).items():
+            values = values.copy()
             kwargs = {
                 "metric_type": values.get("type"),
                 "labels": self.get_labels(),
