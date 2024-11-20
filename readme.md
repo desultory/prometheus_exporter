@@ -1,3 +1,6 @@
+![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Zenlib](https://github.com/desultory/zenlib/actions/workflows/unit_tests.yml/badge.svg)
+
 # Prometheus Exporter
 
 A simple prometheus exporter library using:
