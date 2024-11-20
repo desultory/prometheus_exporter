@@ -48,6 +48,23 @@ class Exporter(ClassLogger):
             assert isinstance(value, Labels), "Labels must be a 'Labels' object."
         super().__setattr__(name, value)
 
+    def read_config(self):
+        """Reads the config file defined in self.config_file"""
+        from tomllib import load
+
+        with open(self.config_file, "rb") as config:
+            self.config = load(config)
+
+        self.logger.info("Read config file: %s", self.config_file)
+        self.labels |= self.config.get("labels", {})
+
+    def start(self):
+        """Starts the exporter server."""
+        from aiohttp import web
+
+        self.logger.info("Exporter server address: %s:%d" % (self.listen_ip, self.listen_port))
+        web.run_app(self.app, host=self.listen_ip, port=self.listen_port)
+
     async def on_shutdown(self, app):
         self.logger.info("Shutting down exporter server")
         for task in all_tasks():
@@ -58,6 +75,9 @@ class Exporter(ClassLogger):
             task.cancel()
 
     def get_labels(self):
+        """ Returns a copy of the labels dict.
+        This is designed to be extended, and the lables object may be modified by the caller.
+        """
         return self.labels.copy()
 
     async def get_metrics(self, *args, **kwargs) -> list:
@@ -85,23 +105,6 @@ class Exporter(ClassLogger):
 
             self.logger.log(20 - log_bump, "Adding metric: %s", name)
             self.metrics.append(Metric(name=name, **kwargs, **values))
-
-    def read_config(self):
-        """Reads the config file defined in self.config_file"""
-        from tomllib import load
-
-        with open(self.config_file, "rb") as config:
-            self.config = load(config)
-
-        self.logger.info("Read config file: %s", self.config_file)
-        self.labels |= self.config.get("labels", {})
-
-    def start(self):
-        """Starts the exporter server."""
-        from aiohttp import web
-
-        self.logger.info("Exporter server address: %s:%d" % (self.listen_ip, self.listen_port))
-        web.run_app(self.app, host=self.listen_ip, port=self.listen_port)
 
     async def handle_metrics(self, request, *args, **kwargs):
         params = dict([p.split("=") for p in request.query_string.split("&")]) if request.query_string else {}
