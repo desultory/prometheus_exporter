@@ -4,6 +4,10 @@ from prometheus_exporter.metric import MetricTypes
 from zenlib.logging import loggify
 
 
+class ExampleMetric(Metric):
+    def _value(self):
+        return 42
+
 @loggify
 class TestMetrics(TestCase):
     def test_simple_metric(self):
@@ -35,6 +39,13 @@ class TestMetrics(TestCase):
         self.assertEqual(metric.help, 'This is a test metric')
         self.assertEqual(metric.labels, test_labels)
         metric_string = '# HELP test This is a test metric\n# TYPE test untyped\ntest{label1="value1"} 0'
+        self.assertEqual(str(metric), metric_string)
+
+    def test_example_metric(self):
+        metric = ExampleMetric('test')
+        self.assertEqual(metric.name, 'test')
+        self.assertEqual(metric.value, 42)
+        metric_string = '# TYPE test untyped\ntest 42'
         self.assertEqual(str(metric), metric_string)
 
     @expectedFailure
