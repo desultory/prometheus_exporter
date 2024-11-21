@@ -23,6 +23,20 @@ class TestMetrics(TestCase):
         metric_string = '# TYPE test untyped\ntest{label1="value1"} 0'
         self.assertEqual(str(metric), metric_string)
 
+    def test_metric_with_help(self):
+        metric = Metric('test', help='This is a test metric')
+        self.assertEqual(metric.help, 'This is a test metric')
+        metric_string = '# HELP test This is a test metric\n# TYPE test untyped\ntest 0'
+        self.assertEqual(str(metric), metric_string)
+
+    def test_metric_with_help_and_labels(self):
+        test_labels = Labels({'label1': 'value1'})
+        metric = Metric('test', help='This is a test metric', labels=test_labels)
+        self.assertEqual(metric.help, 'This is a test metric')
+        self.assertEqual(metric.labels, test_labels)
+        metric_string = '# HELP test This is a test metric\n# TYPE test untyped\ntest{label1="value1"} 0'
+        self.assertEqual(str(metric), metric_string)
+
     @expectedFailure
     def test_bad_name(self):
         Metric('123test')
