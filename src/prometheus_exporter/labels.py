@@ -1,5 +1,3 @@
-"""Labels dictionary, used by both Metrics and Exporters."""
-
 from zenlib.logging import ClassLogger
 
 
