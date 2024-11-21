@@ -22,9 +22,9 @@ class Metric:
     The metric type defaults to 'untyped'.
     """
 
-    def __init__(self, name, value=0, metric_type="untyped", help=None, labels=Labels(), *args, **kwargs):
+    def __init__(self, name, value=0, help=None, labels=Labels(), *args, **kwargs):
         self.name = name
-        self.type = metric_type
+        self.type = kwargs.get("type") or kwargs.get("metric_type", MetricTypes.UNTYPED)
         self.help = help
         self.labels = Labels(labels, logger=self.logger)
         self.value = value
