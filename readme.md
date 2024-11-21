@@ -1,4 +1,5 @@
 ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
+![Tests](https://github.com/desultory/prometheus_exporter/actions/workflows/unit_tests.yml/badge.svg)
 ![Zenlib](https://github.com/desultory/zenlib/actions/workflows/unit_tests.yml/badge.svg)
 
 # Prometheus Exporter
