@@ -1,0 +1,12 @@
+listen_port = 8998
+
+[metrics.test_metric]
+value = 100
+
+[metrics.test_metric_with_help]
+value = 200
+help = "This is a test metric with help"
+
+[metrics.test_metric_with_labels]
+value = 300
+labels = {label1 = "value1", label2 = "value2"}
