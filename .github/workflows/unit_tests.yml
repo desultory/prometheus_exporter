@@ -19,6 +19,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Obtain dependency projects
+      run: git clone https://github.com/desultory/zenlib
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
@@ -28,6 +30,7 @@ jobs:
       run: |
         python -m venv venv
         venv/bin/pip install --upgrade pip
+        venv/bin/pip install ./zenlib
         venv/bin/pip install .
     - name: Run unit tests
       run: |
