@@ -1,8 +1,7 @@
 from re import fullmatch
 
 from zenlib.logging import ClassLogger
-
-LABEL_NAME_REGEX = r"[a-zA-Z_][a-zA-Z0-9_]*"
+from .shared import METRIC_NAME_REGEX
 
 
 class Labels(ClassLogger, dict):
@@ -33,7 +32,7 @@ class Labels(ClassLogger, dict):
             raise TypeError("Label names must be strings")
 
         # Check that the label name is valid
-        if not fullmatch(LABEL_NAME_REGEX, name):
+        if not fullmatch(METRIC_NAME_REGEX, name):
             raise ValueError("Invalid label name: %s" % name)
 
         # Check that the label value is a string

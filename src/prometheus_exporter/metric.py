@@ -3,11 +3,11 @@ from enum import Enum
 from zenlib.logging import loggify
 
 from .labels import Labels
+from .shared import METRIC_NAME_REGEX
 
 
 class MetricTypes(Enum):
     """Prometheus metric types"""
-
     COUNTER = "counter"
     GAUGE = "gauge"
     UNTYPED = "untyped"

@@ -2,6 +2,7 @@ from .cached_exporter import cached_exporter
 from .exporter import Exporter
 from .labels import Labels
 from .metric import Metric
+from .shared import METRIC_NAME_REGEX
 
 DEFAULT_EXPORTER_ARGS = [
     {"flags": ["-p", "--port"], "dest": "listen_port", "type": int, "nargs": "?", "help": "Port to listen on."},
@@ -9,4 +10,4 @@ DEFAULT_EXPORTER_ARGS = [
     {"flags": ["config_file"], "type": str, "nargs": "?", "help": "Config file to use."},
 ]
 
-__all__ = ["Exporter", "cached_exporter", "Metric", "Labels", "DEFAULT_EXPORTER_ARGS"]
+__all__ = ["Exporter", "cached_exporter", "Metric", "Labels", "DEFAULT_EXPORTER_ARGS", "METRIC_NAME_REGEX"]
