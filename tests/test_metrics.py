@@ -49,5 +49,12 @@ class TestMetrics(TestCase):
         metric_string = '# TYPE test counter\ntest 0'
         self.assertEqual(str(metric), metric_string)
 
+    def test_type_from_type(self):
+        """ Use 'type' instead of 'metric_type' """
+        metric = Metric('test', type=MetricTypes.GAUGE)
+        self.assertEqual(metric.type, MetricTypes.GAUGE)
+        metric_string = '# TYPE test gauge\ntest 0'
+        self.assertEqual(str(metric), metric_string)
+
 if __name__ == '__main__':
     main()
