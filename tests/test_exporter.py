@@ -36,6 +36,29 @@ class TestExporter(TestCase):
         for metric in random_metrics:
             self.assertIn(f"{metric} 0", export1)
 
+    def test_global_labels(self):
+        """Ensures that lables which are defined globally are applied to all metrics"""
+        e = Exporter(labels={"global_label": "global_value"}, no_config_file=True)
+        random_metrics = generate_random_metric_config(10)
+        e.config["metrics"] = random_metrics
+        export = run(e.export())
+        for metric in random_metrics:
+            self.assertIn(f'{metric}{{global_label="global_value"}} 0', export)
+
+    def test_global_labels_override(self):
+        """Ensures that global labels defined in a metric's config override the global labels"""
+        e = Exporter(labels={"global_label": "global_value"}, no_config_file=True)
+        random_metrics = generate_random_metric_config(10)
+        e.config["metrics"] = {
+            **random_metrics,
+            "test_metric": {"type": "counter", "help": "test", "labels": {"global_label": "local_value"}},
+        }
+        export = run(e.export())
+        self.assertIn('test_metric{global_label="local_value"} 0', export)
+        for metric in random_metrics:
+            self.assertIn(f'{metric}{{global_label="global_value"}} 0', export)
+
+
     def test_append_metrics(self):
         """Ensures metrics can be appended after init"""
         e = Exporter(no_config_file=True)
