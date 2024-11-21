@@ -35,6 +35,8 @@ class Exporter(ClassLogger):
         if not no_config_file:
             signal(SIGHUP, lambda *args: self.read_config())
             self.read_config()
+        else:
+            self.config = {}
         self.listen_ip = kwargs.get("listen_ip", self.config.get("listen_ip", DEFAULT_IP))
         self.listen_port = kwargs.get("listen_port", self.config.get("listen_port", DEFAULT_PORT))
 
