@@ -1,4 +1,5 @@
 from enum import Enum
+from re import fullmatch
 
 from zenlib.logging import loggify
 
@@ -48,6 +49,8 @@ class Metric:
             if hasattr(self, "name"):
                 raise AttributeError("Cannot change metric name")
             value = value.replace(" ", "_")
+            if not fullmatch(METRIC_NAME_REGEX, value):
+                raise ValueError("Invalid metric name: %s" % value)
         elif name == "type":
             value = MetricTypes[value.upper()] if value else MetricTypes.UNTYPED
         elif name == "value":
