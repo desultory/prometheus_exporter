@@ -40,10 +40,12 @@ class Metric:
         return True
 
     def __setattr__(self, name, value):
-        """
-        Ensure name is not changed after creation.
+        """Ensure name is not changed after creation.
         Turn spaces in the name into underscores.
+
         Set the metric type based on the MetricTypes enum.
+
+        Ensure the value is an integer or float.
         """
         if name == "name":
             if hasattr(self, "name"):
@@ -52,7 +54,8 @@ class Metric:
             if not fullmatch(METRIC_NAME_REGEX, value):
                 raise ValueError("Invalid metric name: %s" % value)
         elif name == "type":
-            value = MetricTypes[value.upper()] if value else MetricTypes.UNTYPED
+            if not isinstance(value, MetricTypes):
+                value = MetricTypes[value.upper()] if value else MetricTypes.UNTYPED
         elif name == "value":
             if not isinstance(value, (int, float)):
                 raise TypeError("Value must be an integer or float")

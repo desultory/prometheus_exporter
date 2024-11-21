@@ -43,5 +43,11 @@ class TestMetrics(TestCase):
         metric_string = '# TYPE test gauge\ntest 0'
         self.assertEqual(str(metric), metric_string)
 
+    def test_type_from_enum(self):
+        metric = Metric('test', metric_type=MetricTypes.COUNTER)
+        self.assertEqual(metric.type, MetricTypes.COUNTER)
+        metric_string = '# TYPE test counter\ntest 0'
+        self.assertEqual(str(metric), metric_string)
+
 if __name__ == '__main__':
     main()
