@@ -36,6 +36,30 @@ class TestExporter(TestCase):
         for metric in random_metrics:
             self.assertIn(f"{metric} 0", export1)
 
+    def test_append_metrics(self):
+        """Ensures metrics can be appended after init"""
+        e = Exporter(no_config_file=True)
+        random_metrics_a = generate_random_metric_config(10)
+        random_metrics_b = generate_random_metric_config(10)
+        all_metrics = {**random_metrics_a, **random_metrics_b}
+        e.config["metrics"] = random_metrics_a
+        export1 = run(e.export())
+        e.config["metrics"].update(random_metrics_b)
+        export2 = run(e.export())
+        self.assertNotEqual(export1, export2)
+        for metric in all_metrics:
+            self.assertIn(f"{metric} 0", export2)
+
+    def test_metric_filter(self):
+        """Ensure metrics can be filtered by label"""
+        e = Exporter(config_file="tests/test_config.toml")
+        label_filter = {"label1": "value1"}
+        export = run(e.export(label_filter=label_filter))
+        self.assertEqual(
+            export,
+            '# TYPE test_metric_with_labels untyped\ntest_metric_with_labels{label1="value1",label2="value2"} 300\n',
+        )
+
 
 @loggify
 class TestExporterAsync(AioHTTPTestCase):
@@ -55,7 +79,7 @@ class TestExporterAsync(AioHTTPTestCase):
             self.assertEqual(text, expected_response)
 
     async def test_filter(self):
-        """Test the exporter server by sending a request to the /metrics endpoint"""
+        """Test the exporter webserver filter by sending a request with args to the /metrics endpoint"""
         expected_response = await self.exporter.export(label_filter={"label1": "value1"})
         async with self.client.get("/metrics?label1=value1") as response:
             self.assertEqual(response.status, 200)
