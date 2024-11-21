@@ -21,6 +21,20 @@ class TestLabels(TestCase):
         self.assertEqual(labels, test_labels)
 
     @expectedFailure
+    def test_empty_value(self):
+        labels = Labels()
+        labels['a'] = ''
+
+    @expectedFailure
+    def test_numeric_key(self):
+        labels = Labels()
+        labels['1a'] = 'a'
+
+    def test_underscore_key(self):
+        labels = Labels()
+        labels['_a'] = 'a'
+
+    @expectedFailure
     def test_bad_preallocated(self):
         test_labels = {'a': 1234, 1: '5678'}
         Labels(test_labels)  # Should raise a ValueError
@@ -40,6 +54,7 @@ class TestLabels(TestCase):
         labels = Labels(test_labels, logger=self.logger)
         copy_labels = labels.copy()
         self.assertEqual(labels, copy_labels)
+
 
 
 if __name__ == '__main__':
