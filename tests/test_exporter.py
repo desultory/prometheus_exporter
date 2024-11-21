@@ -58,6 +58,18 @@ class TestExporter(TestCase):
         for metric in random_metrics:
             self.assertIn(f'{metric}{{global_label="global_value"}} 0', export)
 
+    def test_edited_metric_labels(self):
+        """Test that editing labels on an added metric do not affect global labels"""
+        test_labels = {"label1": "value1", "label2": "value2"}
+        e = Exporter(no_config_file=True, labels=test_labels)
+        random_metrics = generate_random_metric_config(10)
+        e.config["metrics"] = random_metrics
+        e.metrics = []
+        e.export_config_metrics()  # Generate metrics from the config
+        for metric in e.metrics:
+            self.assertEqual(metric.labels, test_labels)
+            metric.labels = {"asdf": str(uuid4())}
+        self.assertEqual(e.labels, test_labels)
 
     def test_append_metrics(self):
         """Ensures metrics can be appended after init"""
