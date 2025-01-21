@@ -63,7 +63,7 @@ def cached_exporter(cls):
             for key, value in label_filter.items():
                 if key not in self.labels and self.labels[key] != value:
                     self.logger.debug("Label filter check failed: %s != %s", self.labels, label_filter)
-                    return
+                    return []
 
             if not hasattr(self, "_cached_metrics") or self.cache_age >= self.cache_life:
                 if new_metrics := await super().get_metrics(label_filter=label_filter):
@@ -76,6 +76,7 @@ def cached_exporter(cls):
             else:
                 self.logger.log(5, "[%s] Returning cached metrics: %s" % (self.name, self._cached_metrics))
                 self.metrics = self._cached_metrics
+            return self.metrics.copy()
 
     CachedExporter.__name__ = f"Cached{cls.__name__}"
     CachedExporter.__module__ = cls.__module__

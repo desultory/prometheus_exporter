@@ -3,9 +3,15 @@ from unittest import TestCase, main
 from uuid import uuid4
 
 from aiohttp.test_utils import AioHTTPTestCase
-from prometheus_exporter import Exporter
+from prometheus_exporter import Exporter, cached_exporter
 from zenlib.logging import loggify
 
+@cached_exporter
+class TestCachedExporter(Exporter):
+    async def get_metrics(self, *args, **kwargs) -> dict:
+        metrics = await super().get_metrics(*args, **kwargs)
+        print("Getting metrics:", metrics)
+        return metrics
 
 def generate_random_metric_config(count: int) -> dict:
     """Generate a random metric configuration"""
@@ -35,6 +41,14 @@ class TestExporter(TestCase):
         self.assertEqual(export1, export2)
         for metric in random_metrics:
             self.assertIn(f"{metric} 0", export1)
+
+    def test_cached_exporter(self):
+        e = TestCachedExporter(no_config_file=True)
+        e.config["metrics"] = generate_random_metric_config(100)
+        export1 = run(e.export())
+        e.config["metrics"] = generate_random_metric_config(100)
+        export2 = run(e.export())
+        self.assertEqual(export1, export2)
 
     def test_global_labels(self):
         """Ensures that lables which are defined globally are applied to all metrics"""

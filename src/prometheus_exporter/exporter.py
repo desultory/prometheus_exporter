@@ -51,7 +51,7 @@ class Exporter(ClassLogger):
 
     @property
     def name(self):
-        return self._name or self.__class__.__name__
+        return getattr(self, "_name", self.__class__.__name__)
 
     @name.setter
     def name(self, value):
