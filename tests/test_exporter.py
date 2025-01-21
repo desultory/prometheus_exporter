@@ -49,6 +49,9 @@ class TestExporter(TestCase):
         e.config["metrics"] = generate_random_metric_config(100)
         export2 = run(e.export())
         self.assertEqual(export1, export2)
+        e.cache_time = 0
+        export3 = run(e.export())
+        self.assertNotEqual(export1, export3)
 
     def test_global_labels(self):
         """Ensures that lables which are defined globally are applied to all metrics"""
