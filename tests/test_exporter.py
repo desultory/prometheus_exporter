@@ -1,5 +1,5 @@
 from asyncio import run
-from unittest import TestCase, expectedFailure, main
+from unittest import TestCase, main
 from uuid import uuid4
 
 from aiohttp.test_utils import AioHTTPTestCase
@@ -17,9 +17,9 @@ def generate_random_metric_config(count: int) -> dict:
 
 
 class TestExporter(TestCase):
-    @expectedFailure
     def test_no_config(self):
-        Exporter(config_file=str(uuid4()))  # Pass a random string as config
+        with self.assertRaises(FileNotFoundError):
+            Exporter(config_file=str(uuid4()))  # Pass a random string as config
 
     def test_proper_no_config(self):
         e = Exporter(no_config_file=True)
