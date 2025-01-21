@@ -8,7 +8,9 @@ If a dict is passed to the export method, it will be used to filter by that labe
 from asyncio import all_tasks, ensure_future
 from pathlib import Path
 from signal import SIGHUP, SIGINT, signal
+from tomllib import load
 
+from aiohttp import web
 from aiohttp.web import Application, Response, get
 from zenlib.logging import ClassLogger
 
@@ -28,8 +30,10 @@ class Exporter(ClassLogger):
     Labels can be supplied as a dict as an argument, and in the config file.
     """
 
-    def __init__(self, config_file="config.toml", labels=Labels(), no_config_file=False, *args, **kwargs):
+    def __init__(self, config_file="config.toml", name=None, labels=Labels(), no_config_file=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if name is not None:
+            self.name = name
         self.labels = Labels(dict_items=labels, logger=self.logger)
         self.config_file = Path(config_file)
         if not no_config_file:
@@ -45,6 +49,17 @@ class Exporter(ClassLogger):
         self.app.add_routes([get("/metrics", self.handle_metrics)])
         self.app.on_shutdown.append(self.on_shutdown)
 
+    @property
+    def name(self):
+        return self._name or self.__class__.__name__
+
+    @name.setter
+    def name(self, value):
+        if getattr(self, "_name", None) is not None:
+            return self.logger.warning("[%s] Name already set, ignoring new name: %s", self.name, value)
+        assert isinstance(value, str), "Name must be a string, not: %s" % type(value)
+        self._name = value
+
     def __setattr__(self, name, value):
         if name == "labels":
             assert isinstance(value, Labels), "Labels must be a 'Labels' object."
@@ -52,8 +67,6 @@ class Exporter(ClassLogger):
 
     def read_config(self):
         """Reads the config file defined in self.config_file"""
-        from tomllib import load
-
         with open(self.config_file, "rb") as config:
             self.config = load(config)
 
@@ -62,8 +75,6 @@ class Exporter(ClassLogger):
 
     def start(self):
         """Starts the exporter server."""
-        from aiohttp import web
-
         self.logger.info("Exporter server address: %s:%d" % (self.listen_ip, self.listen_port))
         web.run_app(self.app, host=self.listen_ip, port=self.listen_port)
 
@@ -77,13 +88,13 @@ class Exporter(ClassLogger):
             task.cancel()
 
     def get_labels(self):
-        """ Returns a copy of the labels dict.
+        """Returns a copy of the labels dict.
         This is designed to be extended, and the lables object may be modified by the caller.
         """
         return self.labels.copy()
 
     async def get_metrics(self, *args, **kwargs) -> list:
-        """ Returns a copy of the metrics list.
+        """Returns a copy of the metrics list.
         This is designed to be extended in subclasses to get metrics from other sources.
         Clears the metric list before getting metrics, as layers may add metrics to the list.
         """
