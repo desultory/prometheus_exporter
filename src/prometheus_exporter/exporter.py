@@ -46,6 +46,7 @@ class Exporter(ClassLogger):
 
         self.app = Application(logger=self.logger)
         signal(SIGINT, lambda *args: ensure_future(self.app.shutdown()))
+        self.app.on_startup.append(self.startup_tasks)
         self.app.add_routes([get("/metrics", self.handle_metrics)])
         self.app.on_shutdown.append(self.on_shutdown)
 
@@ -77,6 +78,9 @@ class Exporter(ClassLogger):
         """Starts the exporter server."""
         self.logger.info("Exporter server address: %s:%d" % (self.listen_ip, self.listen_port))
         web.run_app(self.app, host=self.listen_ip, port=self.listen_port)
+
+    async def startup_tasks(self, *args, **kwargs):
+        pass
 
     async def on_shutdown(self, app):
         self.logger.info("Shutting down exporter server")
