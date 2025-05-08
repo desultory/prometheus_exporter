@@ -133,8 +133,9 @@ class Exporter(ClassLogger):
         )
         return response
 
-    async def export(self, label_filter={}):
+    async def export(self, label_filter=None):
         """Gets metrics using self.metrics Turns them into a metric string for prometheus."""
+        label_filter = label_filter or {}
         output = ""
         for metric in await self.get_metrics(label_filter=label_filter):
             self.logger.log(5, "Checking metric: %s", metric)
