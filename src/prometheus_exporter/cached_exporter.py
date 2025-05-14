@@ -58,8 +58,9 @@ def cached_exporter(cls):
             self.logger.debug("[%s] Cache age: %d" % (self.name, cache_age))
             return time() - getattr(self, "_cache_time", 0)
 
-        async def get_metrics(self, label_filter={}) -> list:
+        async def get_metrics(self, label_filter=None) -> list:
             """Get metrics from the exporter, respecting label filters and caching the result."""
+            label_filter = label_filter or {}
             for key, value in label_filter.items():
                 if key not in self.labels and self.labels[key] != value:
                     self.logger.debug("Label filter check failed: %s != %s", self.labels, label_filter)
