@@ -61,10 +61,6 @@ def cached_exporter(cls):
         async def get_metrics(self, label_filter=None) -> list:
             """Get metrics from the exporter, respecting label filters and caching the result."""
             label_filter = label_filter or {}
-            for key, value in label_filter.items():
-                if key not in self.labels and self.labels[key] != value:
-                    self.logger.debug("Label filter check failed: %s != %s", self.labels, label_filter)
-                    return []
 
             if not hasattr(self, "_cached_metrics") or self.cache_age >= self.cache_life:
                 if new_metrics := await super().get_metrics(label_filter=label_filter):
