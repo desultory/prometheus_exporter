@@ -7,12 +7,12 @@ from .shared import METRIC_NAME_REGEX
 class Labels(ClassLogger, dict):
     """A dictionary of labels, used by both Metrics and Exporters"""
 
-    def __init__(self, dict_items={}, **kwargs):
+    def __init__(self, dict_items={}, **kwargs) -> None:
         """Create a new Labels object from a dictionary"""
         super().__init__(**kwargs)
         self.update(dict_items)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: str) -> None:
         self._check_label(key, value)
         super().__setitem__(key, value)
 
@@ -22,7 +22,7 @@ class Labels(ClassLogger, dict):
             self[key] = value
             self.logger.debug("Added label %s=%s", key, value)
 
-    def _check_label(self, name: str, value: str):
+    def _check_label(self, name: str, value: str) -> None:
         """Check that the label name and value are valid.
         https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels
 
@@ -42,9 +42,9 @@ class Labels(ClassLogger, dict):
         if not value:
             raise ValueError("Label values cannot be empty")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ",".join(['%s="%s"' % (name, value) for name, value in self.items()])
 
-    def copy(self):
+    def copy(self) -> "Labels":
         """Returns a copy of the labels"""
         return Labels(super().copy(), logger=self.logger.parent)

@@ -52,7 +52,7 @@ def cached_exporter(cls):
             self._cache_time = value
 
         @property
-        def cache_age(self) -> int:
+        def cache_age(self) -> float:
             """ Returns the age of the cache """
             cache_age = time() - getattr(self, "_cache_time", 0)
             self.logger.debug("[%s] Cache age: %d" % (self.name, cache_age))
