@@ -2,6 +2,7 @@ from enum import Enum
 from re import fullmatch
 
 from zenlib.logging import ClassLogger
+from zenlib.util import colorize as c_
 
 from .labels import Labels
 from .shared import METRIC_NAME_REGEX
@@ -29,7 +30,7 @@ class Metric(ClassLogger):
         try:
             return MetricTypes[metric_type.upper()]
         except KeyError:
-            raise ValueError(f"Invalid metric type: {metric_type}")
+            raise ValueError(f"Invalid metric type: {c_(metric_type, 'yellow')}")
 
 
     def __init__(
@@ -76,12 +77,12 @@ class Metric(ClassLogger):
                 raise AttributeError("Cannot change metric name")
             value = value.replace(" ", "_")
             if not fullmatch(METRIC_NAME_REGEX, value):
-                raise ValueError("Invalid metric name: %s" % value)
+                raise ValueError(f"Invalid metric name: {c_(value, 'yellow')}")
         elif name == "type":
             value = Metric.resolve_metric_type(value)
         elif name == "value":
             if not isinstance(value, (int, float)):
-                raise TypeError("Value must be an integer or float")
+                raise TypeError(f"[{c_(name, 'blue')}] Value must be an integer or float, got {c_(type(value).__name__, 'red')} ({c_(value, 'yellow')})")
         super().__setattr__(name, value)
 
     def __getattribute__(self, name) -> object:
